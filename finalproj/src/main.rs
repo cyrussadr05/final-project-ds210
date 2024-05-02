@@ -12,7 +12,7 @@ fn main() {
             return;
         }
     };
-    //The above variable stores the entire graph data.
+
     // Print the total number of nodes present in the graph.
     println!("Number of nodes in the graph: {}", graph.len());
 
