@@ -1,15 +1,20 @@
 use std::collections::{HashMap, HashSet};
-use crate::graph::{Graph, bfs};
+use crate::graph::{Graph, bfs};  // Ensure correct module path to import Graph and bfs functions.
 
+// This function calculates various metrics from the graph, providing insights into its structure.
 pub fn graph_metrics(graph: &Graph) -> (usize, usize, f64, f64, f64) {
-    let mut all_distances = Vec::new();
+    let mut all_distances = Vec::new();  // Store distances between nodes here.
+
+    // I iterate over all nodes to gather distances using breadth-first search (BFS).
     for node in graph.keys() {
         let distances = bfs(graph, node);
+        // I only consider non-zero distances to exclude the node itself.
         for distance in distances.values().filter(|&&d| d > 0) {
             all_distances.push(*distance);
         }
     }
 
+    // Calculating maximum, minimum, and median path lengths along with variance and average.
     let max_path_length = *all_distances.iter().max().unwrap_or(&0);
     let min_path_length = *all_distances.iter().min().unwrap_or(&0);
     let total_distance: usize = all_distances.iter().sum();
@@ -19,6 +24,8 @@ pub fn graph_metrics(graph: &Graph) -> (usize, usize, f64, f64, f64) {
         .map(|&d| (d as f64 - average_distance).powi(2))
         .sum::<f64>() / count as f64;
     let standard_deviation = variance.sqrt();
+
+    // Determine the median, handling both even and odd number of elements differently.
     let median = if count > 0 {
         all_distances.sort_unstable();
         if count % 2 == 0 {
@@ -34,17 +41,24 @@ pub fn graph_metrics(graph: &Graph) -> (usize, usize, f64, f64, f64) {
     (max_path_length, min_path_length, median, standard_deviation, average_distance)
 }
 
+// This function computes the degree distribution of the graph.
 pub fn degree_distribution(graph: &Graph) -> HashMap<usize, usize> {
-    let mut distribution = HashMap::new();
+    let mut distribution = HashMap::new();  // Store the frequency of each degree.
+
+    // Count the number of nodes for each degree.
     for node in graph.keys() {
         let degree = graph.get(node).map_or(0, Vec::len);
         *distribution.entry(degree).or_insert(0) += 1;
     }
+
     distribution
 }
 
+// This function computes the degree distribution considering nodes two steps away.
 pub fn degree_distribution_at_distance_2(graph: &Graph) -> HashMap<usize, usize> {
-    let mut distribution = HashMap::new();
+    let mut distribution = HashMap::new();  // Store the frequency of each two-step degree.
+
+    // I explore two layers of neighbors to find unique reachable nodes within two hops.
     for node in graph.keys() {
         let mut neighbors_at_distance_2 = HashSet::new();
         if let Some(neighbors) = graph.get(node) {
@@ -61,14 +75,17 @@ pub fn degree_distribution_at_distance_2(graph: &Graph) -> HashMap<usize, usize>
         let degree = neighbors_at_distance_2.len();
         *distribution.entry(degree).or_insert(0) += 1;
     }
+
     distribution
 }
 
+// This function calculates average degrees for all nodes considering their immediate and two-step connections.
 pub fn calculate_average_degrees(graph: &Graph) -> (f64, f64) {
     let mut total_degree = 0;
     let mut total_degree_2 = 0;
-    let n = graph.len() as f64;
+    let n = graph.len() as f64;  // Total number of nodes.
 
+    // Sum degrees for direct connections and two-step connections.
     for node in graph.keys() {
         let neighbors = graph.get(node).unwrap();
         total_degree += neighbors.len();
@@ -86,7 +103,8 @@ pub fn calculate_average_degrees(graph: &Graph) -> (f64, f64) {
         total_degree_2 += neighbors_at_distance_2.len();
     }
 
-    let average_degree = total_degree as f64 / n;
-    let average_degree_2 = total_degree_2 as f64 / n;
+    let average_degree = total_degree as f64 / n;  // Average degree at distance 1.
+    let average_degree_2 = total_degree_2 as f64 / n;  // Average degree at distance 2.
+
     (average_degree, average_degree_2)
 }
