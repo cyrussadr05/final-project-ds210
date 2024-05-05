@@ -19,7 +19,7 @@
 **How to Run the Project**  
 *Setup:*  
  - Install Rust programming environment.  
- - Place your Twitter dataset in the project's root directory as data.csv.  
+ - Place your Twitter dataset in the project's root directory as data.csv. https://www.kaggle.com/datasets/hwassner/TwitterFriends  
  - *Compilation*:  
   - Compile the project using cargo build.  
  - *Execution*:  
